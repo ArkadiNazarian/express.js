@@ -99,6 +99,70 @@ server.get("/api/v1/movie/:id", (req, res) => {
 
 })
 
+// to patch a data
+
+server.patch("/api/v1/movie/:id", (req, res) => {
+  const id = req.params.id;
+  const updatedMovie = req.body;
+
+  const selectedMovie = movies.find((movie: any) => movie.id === Number(id));
+
+  if (!selectedMovie) {
+    res.status(404).json({ message: 'Movie not found' });
+    return;
+  }
+
+  const updatedMovieData = {
+    ...selectedMovie,
+    ...updatedMovie
+  }
+
+  const index = movies.findIndex((movie: any) => movie.id === Number(id));
+  movies[index] = updatedMovieData;
+
+
+  fs.writeFile('./data/movie.json', JSON.stringify(movies)).then(() => {
+    res.status(200).json({
+      data: {
+        movie: updatedMovieData
+      }
+    });
+  }).catch((err) => {
+    res.status(500).json({ message: 'Error updating movie' });
+  });
+});
+
+// to put a data
+server.put("/api/v1/movie/:id", (req, res) => {
+  const id = req.params.id;
+  const updatedMovie = req.body;
+
+  const selectedMovie = movies.find((movie: any) => movie.id === Number(id));
+
+  if (!selectedMovie) {
+    res.status(404).json({ message: 'Movie not found' });
+    return;
+  }
+
+  const updatedMovieData = {
+    id: selectedMovie.id,
+    ...updatedMovie
+  }
+
+  const index = movies.findIndex((movie: any) => movie.id === Number(id));
+  movies[index] = updatedMovieData;
+
+  fs.writeFile('./data/movie.json', JSON.stringify(movies)).then(() => {
+    res.status(200).json({
+      data: {
+        movie: updatedMovieData
+      }
+    });
+  }).catch((err) => {
+    res.status(500).json({ message: 'Error updating movie' });
+  });
+});
+
 server.listen(3000, () => {
   console.log('Server is running on port 3000');
 });
