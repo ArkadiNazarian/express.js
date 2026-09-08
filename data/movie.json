@@ -1,0 +1,26 @@
+[
+    {
+        "id": 1,
+        "name": "Inception",
+        "publish_year": 2010,
+        "duration": 148
+    },
+    {
+        "id": 2,
+        "name": "The Dark Knight",
+        "publish_year": 2008,
+        "duration": 152
+    },
+    {
+        "id": 3,
+        "name": "Interstellar",
+        "publish_year": 2014,
+        "duration": 169
+    },
+    {
+        "id": 4,
+        "name": "The Matrix",
+        "publish_year": 1999,
+        "duration": 136
+    }
+]
