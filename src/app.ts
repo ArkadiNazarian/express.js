@@ -41,7 +41,7 @@ server.post('/api/v1/movies', (req, res) => {
 
   movies.push(addedMovie);
 
-  fs.writeFile('./data/movies.json', JSON.stringify(movies)).then(() => {
+  fs.writeFile('./data/movie.json', JSON.stringify(movies)).then(() => {
 
     res.status(201).json({ message: 'Movie added successfully' });
 
@@ -162,6 +162,31 @@ server.put("/api/v1/movie/:id", (req, res) => {
     res.status(500).json({ message: 'Error updating movie' });
   });
 });
+
+// to delete a data
+
+server.delete("/api/v1/movie/:id", (req, res) => {
+
+  const id = req.params.id;
+
+  const selectedMovie = movies.find((movie: any) => movie.id === Number(id));
+
+  if (!selectedMovie) {
+    res.status(404).json({ message: 'Movie not found' });
+    return;
+  }
+
+  const filteredMovies = movies.filter((movie: any) => movie.id !== Number(id));
+
+  fs.writeFile('./data/movie.json', JSON.stringify(filteredMovies)).then(() => {
+    res.status(200).json({
+      data: null
+    });
+  }).catch((err) => {
+    res.status(500).json({ message: 'Error deleting movie' });
+  });
+
+})
 
 server.listen(3000, () => {
   console.log('Server is running on port 3000');
