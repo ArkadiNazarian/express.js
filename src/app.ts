@@ -1,7 +1,7 @@
 import express, { type NextFunction, type Request, type Response } from 'express';
 import fs from 'fs/promises';
 import url from 'url';
-import { router } from './routes/movieRoutes.js';
+import { movieRouter } from './routes/movieRoutes.js';
 import morgan from 'morgan';
 
 export const server = express();
@@ -35,13 +35,16 @@ server.use(logger);
 // morgan package is used to show the request time fullfill and the bytes that contains
 server.use(morgan('dev'))
 
+// this is to serve the static files
+server.use(express.static('./public'));
+
 server.use((req: any, res, next) => {
   req.createdAt = new Date();
   next();
 });
 
 // here this router is relatived to this file path
-server.use('/api/v1/movies', router);
+server.use('/api/v1/movies', movieRouter);
 
 // server.get("/api/v1/middlewareTestToPass", (req: any, res) => {
 //   res.status(200).json({
