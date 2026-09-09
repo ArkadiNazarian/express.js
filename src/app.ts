@@ -1,8 +1,9 @@
 import express, { type NextFunction, type Request, type Response } from 'express';
 import fs from 'fs/promises';
 import url from 'url';
+import { router } from './routes/movieRoutes.js';
 
-const server = express();
+export const server = express();
 
 // this is middleware to parse the body
 server.use(express.json());
@@ -25,11 +26,19 @@ const logger = (req: Request, res: Response, next: NextFunction) => {
   next();
 }
 
+// here if we write the path then it will be relative to the root path
+// server.use("/api/v1/users", logger);
+// here when we request to /api/v1/users then it will call the logger middleware otherwise it will call the next middleware
+// but if we don't write the path then it will be relative to all the routes
 server.use(logger);
+
 server.use((req: any, res, next) => {
   req.createdAt = new Date();
   next();
 });
+
+// here this router is relatived to this file path
+server.use('/api/v1/movies', router);
 
 // server.get("/api/v1/middlewareTestToPass", (req: any, res) => {
 //   res.status(200).json({
@@ -231,98 +240,106 @@ const movies = JSON.parse(await readFile);
 // this is the same as above
 
 
-const getMovies = (req: Request, res: Response) => {
-  res.status(200).json({
-    data: {
-      movies: movies
-    }
-  });
-}
+// const getMovies = (req: Request, res: Response) => {
+//   res.status(200).json({
+//     data: {
+//       movies: movies
+//     }
+//   });
+// }
 
-const addMovie = (req: Request, res: Response) => {
-  const newMovieId = movies.length + 1;
+// const addMovie = (req: Request, res: Response) => {
+//   const newMovieId = movies.length + 1;
 
-  const addedMovie = {
-    id: newMovieId,
-    name: req.body.name,
-    publish_year: req.body.publish_year,
-    duration: req.body.duration
-  }
+//   const addedMovie = {
+//     id: newMovieId,
+//     name: req.body.name,
+//     publish_year: req.body.publish_year,
+//     duration: req.body.duration
+//   }
 
-  movies.push(addedMovie);
+//   movies.push(addedMovie);
 
-  fs.writeFile('./data/movie.json', JSON.stringify(movies)).then(() => {
-    res.status(201).json({ message: 'Movie added successfully' });
-  }).catch((err) => {
-    res.status(500).json({ message: 'Error adding movie' });
-  });
-}
+//   fs.writeFile('./data/movie.json', JSON.stringify(movies)).then(() => {
+//     res.status(201).json({ message: 'Movie added successfully' });
+//   }).catch((err) => {
+//     res.status(500).json({ message: 'Error adding movie' });
+//   });
+// }
 
-const getMovie = (req: Request, res: Response) => {
-  const id = req.params.id;
+// const getMovie = (req: Request, res: Response) => {
+//   const id = req.params.id;
 
-  res.status(200).json({
-    data: {
-      movie: movies.find((movie: any) => movie.id === Number(id))
-    }
-  });
-}
+//   res.status(200).json({
+//     data: {
+//       movie: movies.find((movie: any) => movie.id === Number(id))
+//     }
+//   });
+// }
 
-const updateMovie = (req: Request, res: Response) => {
-  const id = req.params.id;
-  const updatedMovie = req.body;
+// const updateMovie = (req: Request, res: Response) => {
+//   const id = req.params.id;
+//   const updatedMovie = req.body;
 
-  const selectedMovie = movies.find((movie: any) => movie.id === Number(id));
+//   const selectedMovie = movies.find((movie: any) => movie.id === Number(id));
 
-  if (!selectedMovie) {
-    res.status(404).json({ message: 'Movie not found' });
-    return;
-  }
+//   if (!selectedMovie) {
+//     res.status(404).json({ message: 'Movie not found' });
+//     return;
+//   }
 
-  const updatedMovieData = {
-    ...selectedMovie,
-    ...updatedMovie
-  }
+//   const updatedMovieData = {
+//     ...selectedMovie,
+//     ...updatedMovie
+//   }
 
-  const index = movies.findIndex((movie: any) => movie.id === Number(id));
-  movies[index] = updatedMovieData;
+//   const index = movies.findIndex((movie: any) => movie.id === Number(id));
+//   movies[index] = updatedMovieData;
 
-  fs.writeFile('./data/movie.json', JSON.stringify(movies)).then(() => {
-    res.status(200).json({
-      data: {
-        movie: updatedMovieData
-      }
-    });
-  }).catch((err) => {
-    res.status(500).json({ message: 'Error updating movie' });
-  });
-}
+//   fs.writeFile('./data/movie.json', JSON.stringify(movies)).then(() => {
+//     res.status(200).json({
+//       data: {
+//         movie: updatedMovieData
+//       }
+//     });
+//   }).catch((err) => {
+//     res.status(500).json({ message: 'Error updating movie' });
+//   });
+// }
 
-const deleteMovie = (req: Request, res: Response) => {
-  const id = req.params.id;
+// const deleteMovie = (req: Request, res: Response) => {
+//   const id = req.params.id;
 
-  const selectedMovie = movies.find((movie: any) => movie.id === Number(id));
+//   const selectedMovie = movies.find((movie: any) => movie.id === Number(id));
 
-  if (!selectedMovie) {
-    res.status(404).json({ message: 'Movie not found' });
-    return;
-  }
+//   if (!selectedMovie) {
+//     res.status(404).json({ message: 'Movie not found' });
+//     return;
+//   }
 
-  const filteredMovies = movies.filter((movie: any) => movie.id !== Number(id));
+//   const filteredMovies = movies.filter((movie: any) => movie.id !== Number(id));
 
-  fs.writeFile('./data/movie.json', JSON.stringify(filteredMovies)).then(() => {
-    res.status(200).json({
-      data: null
-    });
-  }).catch((err) => {
-    res.status(500).json({ message: 'Error deleting movie' });
-  });
-}
+//   fs.writeFile('./data/movie.json', JSON.stringify(filteredMovies)).then(() => {
+//     res.status(200).json({
+//       data: null
+//     });
+//   }).catch((err) => {
+//     res.status(500).json({ message: 'Error deleting movie' });
+//   });
+// }
 
-server.route('/api/v1/movies').get(getMovies).post(addMovie);
-server.route('/api/v1/movies/:id').get(getMovie).patch(updateMovie).put(updateMovie).delete(deleteMovie);
+// server.route('/api/v1/movies').get(getMovies).post(addMovie);
+// server.route('/api/v1/movies/:id').get(getMovie).patch(updateMovie).put(updateMovie).delete(deleteMovie);
 
+// *********************************************************
 
-server.listen(3000, () => {
-  console.log('Server is running on port 3000');
-});
+// now we want to seperate the route handlers to a different file
+// for this we can make a route folder for example and put all the route handlers in that folder for specific subject like movies
+// then import it in the app.ts file and use it in the server.use
+// because it's a middleware we can use it like this
+// also we can seperate the handlers in controllers folder (MVC) architecture
+// also we can move the server.listen to a different file called server.ts
+
+// server.listen(3000, () => {
+//   console.log('Server is running on port 3000');
+// });

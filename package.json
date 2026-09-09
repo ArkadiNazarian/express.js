@@ -15,8 +15,8 @@
     "express": "^5.2.1"
   },
   "scripts": {
-    "start": "node dist/app.js",
-    "dev": "nodemon --exec tsx src/app.ts",
+    "start": "node dist/server.js",
+    "dev": "nodemon --exec tsx src/server.ts",
     "build": "tsc"
   }
 }

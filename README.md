@@ -55,6 +55,15 @@ Then add the
     "build": "tsc"}
   ```
 
+If you have server.ts file then you need to reconfigure the package.json file
+```bash
+"type": "module",
+ "scripts": {
+    "start": "node dist/server.js",
+    "dev": "nodemon --exec tsx src/server.ts",
+    "build": "tsc"}
+  ```
+
 In the `package.json` file we have the scripts to run the app in dev mode and build mode
 
 To run the app in dev mode
