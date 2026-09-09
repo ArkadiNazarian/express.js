@@ -2,6 +2,7 @@ import express, { type NextFunction, type Request, type Response } from 'express
 import fs from 'fs/promises';
 import url from 'url';
 import { router } from './routes/movieRoutes.js';
+import morgan from 'morgan';
 
 export const server = express();
 
@@ -31,6 +32,8 @@ const logger = (req: Request, res: Response, next: NextFunction) => {
 // here when we request to /api/v1/users then it will call the logger middleware otherwise it will call the next middleware
 // but if we don't write the path then it will be relative to all the routes
 server.use(logger);
+// morgan package is used to show the request time fullfill and the bytes that contains
+server.use(morgan('dev'))
 
 server.use((req: any, res, next) => {
   req.createdAt = new Date();
