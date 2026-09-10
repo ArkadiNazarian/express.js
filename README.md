@@ -83,3 +83,16 @@ To run the app in prod mode
 ```bash
 yarn start
 ```
+
+To add .env file
+```bash
+yarn add dotenv
+```
+
+Then create .env file in the root folder
+
+To handle different environments (.env.development , .env.production) we can use dotenv-flow package instead of dotenv
+
+```bash
+yarn add dotenv-flow
+```
