@@ -1,20 +1,21 @@
 import type { Request, Response } from 'express';
 import { Movie } from '../models/moviesModels.js';
 
-export const rejectQueryParams = (req: Request, res: Response, next: any) => {
-    if (Object.keys(req.query).length > 0) {
-        return res.status(400).json({
-            error: 'Query parameters are not allowed on this endpoint'
-        });
-    }
-    next();
-};
+// export const rejectQueryParams = (req: Request, res: Response, next: any) => {
+//     if (Object.keys(req.query).length > 0) {
+//         return res.status(400).json({
+//             error: 'Query parameters are not allowed on this endpoint'
+//         });
+//     }
+//     next();
+// };
 
 export const getMovies = async (req: Request, res: Response) => {
 
     try {
 
-        const movies = await Movie.find();
+        // we can use req.query to get the query parameters and also if we don't pass any query parameters then it will return all the movies
+        const movies = await Movie.find(req.query);
 
         res.status(200).json({
             success: true,

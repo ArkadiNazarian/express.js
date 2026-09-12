@@ -1,6 +1,6 @@
 
 import express from 'express';
-import { addMovie, deleteMovie, getMovie, getMovies, rejectQueryParams, updateMovie } from '../controllers/mongodbMoviesControllers.js';
+import { addMovie, deleteMovie, getMovie, getMovies,  updateMovie } from '../controllers/mongodbMoviesControllers.js';
 // import { getMovies, addMovie, getMovie, updateMovie, deleteMovie, checkId, rejectQueryParams } from '../controllers/index.js';
 
 export const movieRouter = express.Router()
@@ -16,5 +16,5 @@ export const movieRouter = express.Router()
 // movieRouter.route('/').get(rejectQueryParams, getMovies).post(addMovie);
 // movieRouter.route('/:id').get(getMovie).patch(updateMovie).put(updateMovie).delete(deleteMovie);
 
-movieRouter.route('/').get(rejectQueryParams, getMovies).post(addMovie);
+movieRouter.route('/').get(getMovies).post(addMovie);
 movieRouter.route('/:id').get(getMovie).patch(updateMovie).put(updateMovie).delete(deleteMovie);
