@@ -15,7 +15,17 @@ export const getMovies = async (req: Request, res: Response) => {
     try {
 
         // we can use req.query to get the query parameters and also if we don't pass any query parameters then it will return all the movies
-        const movies = await Movie.find(req.query);
+        // const movies = await Movie.find(req.query);
+
+        // now if we want to handle the <= , >= , > , < and != operators we can use $lt, $lte, $gt, $gte, $ne
+
+        const { minDuration, ...queries } = req.query;
+
+        if (minDuration) {
+            queries.duration = { $gte: minDuration };
+        }
+
+        const movies = await Movie.find(queries);
 
         res.status(200).json({
             success: true,
@@ -90,7 +100,7 @@ export const updateMovie = async (req: Request, res: Response) => {
 
 export const deleteMovie = async (req: Request, res: Response) => {
 
-    try{
+    try {
 
         const movie = await Movie.findByIdAndDelete(req.params.id);
 
@@ -99,7 +109,7 @@ export const deleteMovie = async (req: Request, res: Response) => {
             data: null
         });
 
-    }catch(e){
+    } catch (e) {
         res.status(500).json({
             success: false,
             error: e
