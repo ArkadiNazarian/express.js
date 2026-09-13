@@ -19,16 +19,34 @@ export const getMovies = async (req: Request, res: Response) => {
 
         // now if we want to handle the <= , >= , > , < and != operators we can use $lt, $lte, $gt, $gte, $ne
 
-        const { minDuration, ...queries } = req.query;
+        const { minDuration, sort, fields, page, limit, ...queries } = req.query;
 
         if (minDuration) {
             queries.duration = { $gte: minDuration };
         }
 
-        const movies = await Movie.find(queries);
+        let sortOption: string | undefined;
+
+        // this is how we can handle the sort parameter if the parmeter is -duration will be descending order of duration field
+        if (sort) {
+            sortOption = (sort as string).split(',').join(' ');
+        }
+
+        let fieldsOption: string = '';
+
+        // this is how we can handle to return selected fields and like the sort if we use "-" before the field name 
+        // it will exculde the field from the response like -__v
+        if (fields) {
+            fieldsOption = (fields as string).split(',').join(' ');
+        }
+
+        // for pagination we can use skip and limit
+
+        const movies = await Movie.find(queries).sort(sortOption).select(fieldsOption).skip((Number(page) - 1) * Number(limit)).limit(Number(limit));
 
         res.status(200).json({
             success: true,
+            length: movies.length,
             data: movies
         });
 
