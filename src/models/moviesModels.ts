@@ -84,8 +84,25 @@ const schema = new mongoose.Schema(
       type: [String],
       default: []
     }
+  },
+  // these two variables are added for the virtual fields
+  {
+    toJSON: {
+      virtuals: true
+    },
+    toObject: {
+      virtuals: true
+    }
   }
 );
+
+// vituals are functions that are added to the schema
+// they can be used to add extra functionality to the schema
+// but it's not a real field in the database
+
+schema.virtual('duration_in_hours').get(function () {
+  return this.duration / 60;
+});
 
 // this will make a collection in mongodb (prular and lower case) so it will be movies
 export const Movie = mongoose.model('Movie', schema);

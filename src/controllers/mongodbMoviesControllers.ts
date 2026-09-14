@@ -184,3 +184,49 @@ export const getMoviesStats = async (req: Request, res: Response) => {
         });
     }
 }
+
+export const getMovieGenres = async (req: Request, res: Response) => {
+    try {
+
+        const params = req.params.genre as string;
+
+        const movies = await Movie.aggregate([
+            {
+                $unwind: "$genre"
+            },
+            {
+                $match: { genre: params }
+            },
+            {
+                $group: {
+                    _id: "$genre",
+                    movies: { $push: "$name" },
+                    totalCount: { $sum: 1 }
+                }
+            },
+            {
+                $sort: { totalCount: -1 }
+            },
+            {
+                $addFields: {
+                    genre: "$_id"
+                }
+            },
+            {
+                $project: { _id: 0 }
+            },
+            
+        ])
+
+        res.status(200).json({
+            success: true,
+            data: movies
+        });
+
+    } catch (e) {
+        res.status(500).json({
+            success: false,
+            error: e
+        });
+    }
+}
