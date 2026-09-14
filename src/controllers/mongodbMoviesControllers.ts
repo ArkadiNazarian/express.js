@@ -1,14 +1,12 @@
 import type { Request, Response } from 'express';
 import { Movie } from '../models/moviesModels.js';
 
-// export const rejectQueryParams = (req: Request, res: Response, next: any) => {
-//     if (Object.keys(req.query).length > 0) {
-//         return res.status(400).json({
-//             error: 'Query parameters are not allowed on this endpoint'
-//         });
-//     }
-//     next();
-// };
+export const hightRatingMovies = async (req: Request, res: Response, next: Function) => {
+    res.locals.sort = '-rating';
+    res.locals.limit = '10';
+
+    next();
+}
 
 export const getMovies = async (req: Request, res: Response) => {
 
@@ -17,9 +15,12 @@ export const getMovies = async (req: Request, res: Response) => {
         // we can use req.query to get the query parameters and also if we don't pass any query parameters then it will return all the movies
         // const movies = await Movie.find(req.query);
 
-        // now if we want to handle the <= , >= , > , < and != operators we can use $lt, $lte, $gt, $gte, $ne
+        // now if we want to handle the <= , >= , > , < and != operators we can use $lt, $lte, $gt, $gte, $ne, $eq
 
         const { minDuration, sort, fields, page, limit, ...queries } = req.query;
+
+        const effectiveSort = (res.locals.sort ?? sort) as string | undefined;
+        const effectiveLimit = (res.locals.limit ?? limit) as string | undefined;
 
         if (minDuration) {
             queries.duration = { $gte: minDuration };
@@ -28,8 +29,8 @@ export const getMovies = async (req: Request, res: Response) => {
         let sortOption: string | undefined;
 
         // this is how we can handle the sort parameter if the parmeter is -duration will be descending order of duration field
-        if (sort) {
-            sortOption = (sort as string).split(',').join(' ');
+        if (effectiveSort) {
+            sortOption = (effectiveSort as string).split(',').join(' ');
         }
 
         let fieldsOption: string = '';
@@ -40,9 +41,18 @@ export const getMovies = async (req: Request, res: Response) => {
             fieldsOption = (fields as string).split(',').join(' ');
         }
 
+        if (page && effectiveLimit) {
+
+            const movies = await Movie.countDocuments(queries);
+
+            if ((Number(page) - 1) * Number(effectiveLimit) > movies) {
+                throw new Error('Page not found');
+            }
+        }
+
         // for pagination we can use skip and limit
 
-        const movies = await Movie.find(queries).sort(sortOption).select(fieldsOption).skip((Number(page) - 1) * Number(limit)).limit(Number(limit));
+        const movies = await Movie.find(queries).sort(sortOption).select(fieldsOption).skip((Number(page) - 1) * Number(effectiveLimit)).limit(Number(effectiveLimit));
 
         res.status(200).json({
             success: true,
@@ -51,9 +61,12 @@ export const getMovies = async (req: Request, res: Response) => {
         });
 
     } catch (e) {
+
+        const error = e as Error;
+
         res.status(500).json({
             success: false,
-            error: e
+            error: error.message
         });
     }
 
@@ -134,4 +147,40 @@ export const deleteMovie = async (req: Request, res: Response) => {
         });
     }
 
+}
+
+export const getMoviesStats = async (req: Request, res: Response) => {
+    try {
+        // MongoDB Aggregation Pipeline: processes documents in stages,
+        // where the output of one stage becomes the input of the next.
+        //   $match  → filter movies with duration >= 10
+        //   $group  → group them by publish_year and compute
+        //             max/min/avg rating, total duration, and movie count per year
+        const movies = await Movie.aggregate([
+            {
+                $match: { duration: { $gte: 10 } }
+            },
+            {
+                $group: {
+                    _id: "$publish_year",
+                    maxRating: { $max: "$rating" },
+                    minRating: { $min: "$rating" },
+                    avgRating: { $avg: "$rating" },
+                    totalDuration: { $sum: "$duration" },
+                    totlaMovies: { $sum: 1 }
+                }
+            }
+        ])
+
+        res.status(200).json({
+            success: true,
+            data: movies
+        });
+
+    } catch (e) {
+        res.status(500).json({
+            success: false,
+            error: e
+        });
+    }
 }
