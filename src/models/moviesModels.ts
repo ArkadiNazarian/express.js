@@ -27,7 +27,11 @@ const schema = new mongoose.Schema(
       validate: {
         validator: (arr: string) => arr.length > 0,
         message: 'A movie must have at least one genre'
-      }
+      },
+      enum: [{
+        values: ['Action', 'Adventure', 'Animation', 'Biography', 'Comedy', 'Crime', 'Documentary', 'Drama', 'Family', 'Fantasy', 'History', 'Horror', 'Music', 'Mystery', 'Romance', 'Sci-Fi', 'Sport', 'Thriller', 'War', 'Western'],
+        message: 'Genre is not valid'
+      }],
     },
     director: {
       type: String,

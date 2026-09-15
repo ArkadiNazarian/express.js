@@ -46,6 +46,34 @@ server.use((req: any, res, next) => {
 // here this router is relatived to this file path
 server.use('/api/v1/movies', movieRouter);
 
+// this is the default route, means if there is no route defined then it will be relative to this path
+// you know that it should be the last route defined
+
+server.all('/*splat', (req, res, next) => {
+  // res.status(404).json({
+  //   message: `No route found for ${req.method} ${req.url}`
+  // });
+
+
+  // to use the error middleware we can use this
+  const error: any = new Error(`No route found for ${req.method} ${req.url}`);
+  error.statusCode = 404;
+
+  // if we pass any arguement to next() function it calls the error middleware
+  next(error);
+
+});
+
+// here we can make a middleware to handle the errors , for example now for the default route we are returning 404 error
+server.use((error: any, req: Request, res: Response, next: NextFunction) => {
+
+  res.status(error.statusCode).json({
+    statusCode: error.statusCode,
+    message: error.message
+  })
+
+})
+
 // server.get("/api/v1/middlewareTestToPass", (req: any, res) => {
 //   res.status(200).json({
 //     data: {

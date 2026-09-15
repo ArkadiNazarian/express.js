@@ -116,7 +116,7 @@ export const updateMovie = async (req: Request, res: Response) => {
     try {
 
         // when we use {new: true} it will return the updated document
-        const movie = await Movie.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        const movie = await Movie.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
 
         res.status(200).json({
             success: true,
@@ -218,7 +218,7 @@ export const getMovieGenres = async (req: Request, res: Response) => {
             {
                 $project: { _id: 0 }
             },
-            
+
         ])
 
         res.status(200).json({
