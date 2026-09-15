@@ -104,5 +104,22 @@ schema.virtual('duration_in_hours').get(function () {
   return this.duration / 60;
 });
 
+// we can use middleware of mongodb before (pre) or after (post) an action happens
+
+schema.pre('save', async function () {
+  console.log('pre save');
+  console.log(this, 'doc is added');
+  // no next() — Mongoose waits for the async function
+});
+
+schema.pre('find', async function () {
+  console.log('pre find')
+});
+
+schema.post('find', (doc) => {
+  console.log('post find')
+
+})
+
 // this will make a collection in mongodb (prular and lower case) so it will be movies
 export const Movie = mongoose.model('Movie', schema);

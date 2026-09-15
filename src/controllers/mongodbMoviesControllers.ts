@@ -83,9 +83,12 @@ export const addMovie = async (req: Request, res: Response) => {
             data: movie
         });
     } catch (e) {
+
+        const error = e as Error;
+
         res.status(500).json({
             success: false,
-            error: e
+            error: error.message
         });
     }
 
