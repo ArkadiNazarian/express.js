@@ -8,7 +8,7 @@ export const hightRatingMovies = async (req: Request, res: Response, next: Funct
     next();
 }
 
-export const getMovies = async (req: Request, res: Response) => {
+export const getMovies = async (req: Request, res: Response, next: Function) => {
 
     try {
 
@@ -62,12 +62,20 @@ export const getMovies = async (req: Request, res: Response) => {
 
     } catch (e) {
 
-        const error = e as Error;
+        const err = e as Error;
 
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
+        // res.status(500).json({
+        //     success: false,
+        //     error: error.message
+        // });
+
+        // handle through the error middleware
+
+        const error: any = new Error(err.message);
+        error.statusCode = 500;
+        error.success = false;
+
+        next(error);
     }
 
 }
@@ -112,7 +120,7 @@ export const getMovie = async (req: Request, res: Response) => {
     }
 }
 
-export const updateMovie = async (req: Request, res: Response) => {
+export const updateMovie = async (req: Request, res: Response, next: Function) => {
     try {
 
         // when we use {new: true} it will return the updated document
@@ -123,10 +131,18 @@ export const updateMovie = async (req: Request, res: Response) => {
             data: movie
         });
     } catch (e) {
-        res.status(500).json({
-            success: false,
-            error: e
-        });
+
+        const err = e as Error
+        // res.status(500).json({
+        //     success: false,
+        //     error: e
+        // });
+
+        const error: any = new Error(err.message);
+        error.statusCode = 500;
+        error.success = false;
+
+        next(error);
     }
 
 

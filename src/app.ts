@@ -3,6 +3,7 @@ import fs from 'fs/promises';
 import url from 'url';
 import { movieRouter } from './routes/movieRoutes.js';
 import morgan from 'morgan';
+import { globalErrorHandler } from './controllers/errorControllers.js';
 
 export const server = express();
 
@@ -58,6 +59,7 @@ server.all('/*splat', (req, res, next) => {
   // to use the error middleware we can use this
   const error: any = new Error(`No route found for ${req.method} ${req.url}`);
   error.statusCode = 404;
+  error.success = false;
 
   // if we pass any arguement to next() function it calls the error middleware
   next(error);
@@ -65,14 +67,7 @@ server.all('/*splat', (req, res, next) => {
 });
 
 // here we can make a middleware to handle the errors , for example now for the default route we are returning 404 error
-server.use((error: any, req: Request, res: Response, next: NextFunction) => {
-
-  res.status(error.statusCode).json({
-    statusCode: error.statusCode,
-    message: error.message
-  })
-
-})
+server.use(globalErrorHandler);
 
 // server.get("/api/v1/middlewareTestToPass", (req: any, res) => {
 //   res.status(200).json({
