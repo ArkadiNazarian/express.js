@@ -4,6 +4,7 @@ import url from 'url';
 import { movieRouter } from './routes/movieRoutes.js';
 import morgan from 'morgan';
 import { globalErrorHandler } from './controllers/errorControllers.js';
+import { authRouter } from './routes/authRouters.js';
 
 export const server = express();
 
@@ -46,6 +47,8 @@ server.use((req: any, res, next) => {
 
 // here this router is relatived to this file path
 server.use('/api/v1/movies', movieRouter);
+
+server.use('/api/v1/users', authRouter);
 
 // this is the default route, means if there is no route defined then it will be relative to this path
 // you know that it should be the last route defined
