@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 import { User } from '../models/usersModels.js';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import crypto from 'node:crypto';
 
 export const protect = async (req: Request, res: Response, next: Function) => {
     try {
@@ -42,7 +43,7 @@ export const signup = async (req: Request, res: Response) => {
         const user = await User.create(req.body);
 
         const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY!, {
-            expiresIn: 600000
+            expiresIn: 3600
         });
 
         res.status(201).json({
@@ -118,22 +119,17 @@ export const forgetPassword = async (req: Request, res: Response, next: Function
             throw new Error('User not found');
         }
 
-        const resetPasswordToken = await bcrypt.hash(user.id, 10);
+        const rawToken = crypto.randomBytes(32).toString('hex');
+        const hashedToken = crypto.createHash('sha256').update(rawToken).digest('hex')
 
-        const updatedUser = await User.findByIdAndUpdate(user.id, {
-            resetPasswordToken,
-            resetPasswordExpires: new Date(Date.now() + 3600000)
-        },{new: true}).select('-__v');
-
-        if (!updatedUser) {
-            throw new Error('User not found');
-        }
+        await User.findByIdAndUpdate(user.id, {
+            resetPasswordToken: hashedToken,
+            resetPasswordExpires: new Date(Date.now() + 3600000) // 1 hour
+        });
 
         res.status(200).json({
             success: true,
-            data: {
-                user: updatedUser
-            }
+            resetPasswordToken: rawToken
         });
 
     } catch (e) {
@@ -145,4 +141,98 @@ export const forgetPassword = async (req: Request, res: Response, next: Function
         });
     }
 
+}
+
+export const resetPassword = async (req: Request, res: Response) => {
+    try {
+        const { resetPasswordToken, password } = req.body;
+
+        if (!resetPasswordToken || !password) {
+            res.status(400).json({ success: false, error: 'Token and password are required' });
+            return;
+        }
+
+        const hashedToken = crypto.createHash('sha256').update(resetPasswordToken).digest('hex');
+
+        const user = await User.findOne({
+            resetPasswordToken: hashedToken,
+            resetPasswordExpires: { $gt: new Date() }
+        }).select('-password -__v');
+
+
+        if (!user || !user.resetPasswordToken) {
+            res.status(400).json({ success: false, error: 'Expired reset token' });
+            return;
+        }
+
+        if (!user) {
+            res.status(400).json({ success: false, error: 'Invalid or expired reset token' });
+            return;
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(user.id, {
+            password: await bcrypt.hash(password, 12),
+            resetPasswordToken: null,
+            resetPasswordExpires: null
+        }, { returnDocument: 'after' }).select('-__v -password');
+
+        res.status(200).json({
+            success: true,
+            data: {
+                user: updatedUser
+            }
+        });
+
+    } catch (e) {
+        const error = e as Error;
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+}
+
+export const updatePassword = async (req: any, res: Response) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+
+        if (!currentPassword || !newPassword) {
+            throw new Error('Current password and new password are required');
+        }
+
+        const user = await User.findById(req.user.id).select('+password');
+
+        if (!user) {
+            throw new Error('User not found');
+        }
+
+        const comparePassword = await bcrypt.compare(currentPassword, user.password);
+
+        if (!comparePassword) {
+            throw new Error('Invalid password');
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(user.id, {
+            password: await bcrypt.hash(newPassword, 12),
+        }, { returnDocument: 'after' }).select('-__v -password');
+
+        const token = jwt.sign({ userId: user.id }, process.env.SECRET_KEY!, {
+            expiresIn: 3600
+        });
+
+        res.status(200).json({
+            success: true,
+            token: token,
+            data: {
+                user: updatedUser
+            }
+        });
+
+    } catch (e) {
+        const error = e as Error;
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
 }
