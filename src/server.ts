@@ -1,5 +1,5 @@
-import { server } from './app.js';
-import dotenv from 'dotenv';
+import 'dotenv/config';
+import { app } from './app.js';
 import mongoose from 'mongoose';
 
 process.on('uncaughtException', (err) => {
@@ -11,7 +11,8 @@ process.on('uncaughtException', (err) => {
 })
 
 // we can use dotenv to load the environment variables then we can use in the project
-dotenv.config();
+// dotenv.config();
+// or import 'dotenv/config'
 
 // connect to the database
 mongoose.connect(process.env.MONGODB_URI!).then((connection) => {
@@ -21,7 +22,7 @@ mongoose.connect(process.env.MONGODB_URI!).then((connection) => {
 });
 
 
-const app = server.listen(process.env.PORT, () => {
+const server = app.listen(process.env.PORT, () => {
   console.log('Server is running on port 3000');
 });
 
@@ -34,7 +35,7 @@ process.on('unhandledRejection', (err) => {
 
   // if there is an error in our application, we should shudown the server
   console.log('Shutting down the server');
-  app.close(() => {
+  server.close(() => {
     process.exit(1)
   });
 

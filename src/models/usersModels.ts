@@ -26,7 +26,9 @@ const userSchema = new mongoose.Schema({
             message: "Password and confirm password must match"
         }
     },
-    photo: String
+    photo: String,
+    resetPasswordToken: String,
+    resetPasswordExpires: Date
 });
 
 userSchema.pre('save', async function () {

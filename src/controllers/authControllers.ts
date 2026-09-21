@@ -108,3 +108,41 @@ export const login = async (req: Request, res: Response) => {
 
     }
 }
+
+export const forgetPassword = async (req: Request, res: Response, next: Function) => {
+    try {
+
+        const user = await User.findOne({ email: req.body.email });
+
+        if (!user) {
+            throw new Error('User not found');
+        }
+
+        const resetPasswordToken = await bcrypt.hash(user.id, 10);
+
+        const updatedUser = await User.findByIdAndUpdate(user.id, {
+            resetPasswordToken,
+            resetPasswordExpires: new Date(Date.now() + 3600000)
+        },{new: true}).select('-__v');
+
+        if (!updatedUser) {
+            throw new Error('User not found');
+        }
+
+        res.status(200).json({
+            success: true,
+            data: {
+                user: updatedUser
+            }
+        });
+
+    } catch (e) {
+        const error = e as Error;
+
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+
+}

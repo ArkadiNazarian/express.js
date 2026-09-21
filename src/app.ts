@@ -6,19 +6,19 @@ import morgan from 'morgan';
 import { globalErrorHandler } from './controllers/errorControllers.js';
 import { authRouter } from './routes/authRouters.js';
 
-export const server = express();
+export const app = express();
 
 // this is middleware to parse the body
-server.use(express.json());
+app.use(express.json());
 
 // we can have custom middleware like this :
 // each middleware will be called one by one in order with each request
 // for example if we have two middlewares like this
-// server.use(middleware1);
-// server.use(middleware2);
+// app.use(middleware1);
+// app.use(middleware2);
 // then middleware1 will be called first and then middleware2
 // if we want to call middleware2 first then we can use this
-// server.use(middleware2, middleware1);
+// app.use(middleware2, middleware1);
 // each middleware has 3 parameters
 // req, res, next
 // route handlers also are middlewares but for specific route
@@ -30,30 +30,30 @@ const logger = (req: Request, res: Response, next: NextFunction) => {
 }
 
 // here if we write the path then it will be relative to the root path
-// server.use("/api/v1/users", logger);
+// app.use("/api/v1/users", logger);
 // here when we request to /api/v1/users then it will call the logger middleware otherwise it will call the next middleware
 // but if we don't write the path then it will be relative to all the routes
-server.use(logger);
+app.use(logger);
 // morgan package is used to show the request time fullfill and the bytes that contains
-server.use(morgan('dev'))
+app.use(morgan('dev'))
 
 // this is to serve the static files
-server.use(express.static('./public'));
+app.use(express.static('./public'));
 
-server.use((req: any, res, next) => {
+app.use((req: any, res, next) => {
   req.createdAt = new Date();
   next();
 });
 
 // here this router is relatived to this file path
-server.use('/api/v1/movies', movieRouter);
+app.use('/api/v1/movies', movieRouter);
 
-server.use('/api/v1/users', authRouter);
+app.use('/api/v1/users', authRouter);
 
 // this is the default route, means if there is no route defined then it will be relative to this path
 // you know that it should be the last route defined
 
-server.all('/*splat', (req, res, next) => {
+app.all('/*splat', (req, res, next) => {
   // res.status(404).json({
   //   message: `No route found for ${req.method} ${req.url}`
   // });
@@ -70,9 +70,9 @@ server.all('/*splat', (req, res, next) => {
 });
 
 // here we can make a middleware to handle the errors , for example now for the default route we are returning 404 error
-server.use(globalErrorHandler);
+app.use(globalErrorHandler);
 
-// server.get("/api/v1/middlewareTestToPass", (req: any, res) => {
+// app.get("/api/v1/middlewareTestToPass", (req: any, res) => {
 //   res.status(200).json({
 //     data: {
 //       message: 'Middleware is working',
@@ -86,7 +86,7 @@ const movies = JSON.parse(await readFile);
 
 
 // // this is get request to rooth path
-// server.get('/', (req, res) => {
+// app.get('/', (req, res) => {
 
 
 //   // res.send is used for sending plain text
@@ -101,7 +101,7 @@ const movies = JSON.parse(await readFile);
 
 
 
-// server.post('/api/v1/movies', (req, res) => {
+// app.post('/api/v1/movies', (req, res) => {
 
 //   // req.body is undefiend we should use middleware (line8) to get the body
 //   console.log(req.body);
@@ -129,7 +129,7 @@ const movies = JSON.parse(await readFile);
 
 
 
-// server.get('/api/v1/movies', (req, res) => {
+// app.get('/api/v1/movies', (req, res) => {
 
 //   res.status(200).json({
 //     data: {
@@ -141,7 +141,7 @@ const movies = JSON.parse(await readFile);
 
 // // get request to specific movie path with id query parameter
 
-// server.get("/api/v1/movies", (req, res) => {
+// app.get("/api/v1/movies", (req, res) => {
 
 //   const id = url.parse(req.url, true).query.id;
 
@@ -156,7 +156,7 @@ const movies = JSON.parse(await readFile);
 // // get request to specific movie path with route parameter
 // // if we want the route parameter to be option we can use this "/api/v1/movie/:id?"
 
-// server.get("/api/v1/movies/:id", (req, res) => {
+// app.get("/api/v1/movies/:id", (req, res) => {
 
 //   const id = req.params.id;
 
@@ -177,7 +177,7 @@ const movies = JSON.parse(await readFile);
 
 // // to patch a data
 
-// server.patch("/api/v1/movies/:id", (req, res) => {
+// app.patch("/api/v1/movies/:id", (req, res) => {
 //   const id = req.params.id;
 //   const updatedMovie = req.body;
 
@@ -209,7 +209,7 @@ const movies = JSON.parse(await readFile);
 // });
 
 // // to put a data
-// server.put("/api/v1/movies/:id", (req, res) => {
+// app.put("/api/v1/movies/:id", (req, res) => {
 //   const id = req.params.id;
 //   const updatedMovie = req.body;
 
@@ -241,7 +241,7 @@ const movies = JSON.parse(await readFile);
 
 // // to delete a data
 
-// server.delete("/api/v1/movie/:id", (req, res) => {
+// app.delete("/api/v1/movie/:id", (req, res) => {
 
 //   const id = req.params.id;
 
@@ -267,8 +267,8 @@ const movies = JSON.parse(await readFile);
 // *********************************************************************************************
 
 // also we can chaining the route handlers  , if we seperate each callback to a function
-// server.route('/api/v1/movies').get(getMovies).post(addMovie);
-// server.route('/api/v1/movies/:id').get(getMovie).patch(updateMovie).put(updateMovie).delete(deleteMovie);
+// app.route('/api/v1/movies').get(getMovies).post(addMovie);
+// app.route('/api/v1/movies/:id').get(getMovie).patch(updateMovie).put(updateMovie).delete(deleteMovie);
 // this is the same as above
 
 
@@ -360,18 +360,18 @@ const movies = JSON.parse(await readFile);
 //   });
 // }
 
-// server.route('/api/v1/movies').get(getMovies).post(addMovie);
-// server.route('/api/v1/movies/:id').get(getMovie).patch(updateMovie).put(updateMovie).delete(deleteMovie);
+// app.route('/api/v1/movies').get(getMovies).post(addMovie);
+// app.route('/api/v1/movies/:id').get(getMovie).patch(updateMovie).put(updateMovie).delete(deleteMovie);
 
 // *********************************************************
 
 // now we want to seperate the route handlers to a different file
 // for this we can make a route folder for example and put all the route handlers in that folder for specific subject like movies
-// then import it in the app.ts file and use it in the server.use
+// then import it in the app.ts file and use it in the app.use
 // because it's a middleware we can use it like this
 // also we can seperate the handlers in controllers folder (MVC) architecture
-// also we can move the server.listen to a different file called server.ts
+// also we can move the app.listen to a different file called app.ts
 
-// server.listen(3000, () => {
-//   console.log('Server is running on port 3000');
+// app.listen(3000, () => {
+//   console.log('app is running on port 3000');
 // });
