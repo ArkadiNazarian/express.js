@@ -1,6 +1,7 @@
 
 import express from 'express';
 import { addMovie, deleteMovie, getMovie, getMovieGenres, getMovies,  getMoviesStats,  hightRatingMovies,  updateMovie } from '../controllers/mongodbMoviesControllers.js';
+import { protect } from '../controllers/authControllers.js';
 // import { getMovies, addMovie, getMovie, updateMovie, deleteMovie, checkId, rejectQueryParams } from '../controllers/index.js';
 
 export const movieRouter = express.Router()
@@ -17,7 +18,9 @@ export const movieRouter = express.Router()
 // movieRouter.route('/:id').get(getMovie).patch(updateMovie).put(updateMovie).delete(deleteMovie);
 
 
-movieRouter.route('/').get(getMovies).post(addMovie);
+movieRouter.route('/').get(protect,getMovies).post(addMovie);
+
+// movieRouter.use(protect);
 movieRouter.route('/hightRatingMovies').get(hightRatingMovies, getMovies);
 movieRouter.route("/stats").get(getMoviesStats);
 movieRouter.route("/genre/:genre").get(getMovieGenres);
