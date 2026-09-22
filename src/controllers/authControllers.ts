@@ -46,6 +46,9 @@ export const signup = async (req: Request, res: Response) => {
             expiresIn: 3600
         });
 
+        // this line will add the token to cookie header of the response called token
+        res.cookie('token', token, { httpOnly: true, secure: true, sameSite: 'strict', maxAge: 3600 });
+
         res.status(201).json({
             success: true,
             token,
@@ -92,6 +95,8 @@ export const login = async (req: Request, res: Response) => {
         const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY!, {
             expiresIn: 3600
         });
+
+        res.cookie('token', token, { httpOnly: true, secure: true, sameSite: 'strict', maxAge: 3600 });
 
         res.status(200).json({
             success: true,

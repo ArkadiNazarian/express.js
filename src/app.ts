@@ -6,11 +6,25 @@ import morgan from 'morgan';
 import { globalErrorHandler } from './controllers/errorControllers.js';
 import { authRouter } from './routes/authRouters.js';
 import { userRouter } from './routes/userRouter.js';
+import rateLimit from 'express-rate-limit';
+import helmet from 'helmet';
 
 export const app = express();
 
+// use helmet to set some security headers
+app.use(helmet());
+
+// this is rate limiter
+// now we can see the two headers included X-Ratelimit-Limit and X-Ratelimit-Remaining
+app.use(rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP, please try again after 15 minutes'
+}));
+
 // this is middleware to parse the body
-app.use(express.json());
+// in .json() we can pass limit of the body size
+app.use(express.json({limit: '50mb'}));
 
 // we can have custom middleware like this :
 // each middleware will be called one by one in order with each request
