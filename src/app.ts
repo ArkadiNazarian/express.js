@@ -8,6 +8,7 @@ import { authRouter } from './routes/authRouters.js';
 import { userRouter } from './routes/userRouter.js';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
+import saitize from 'express-mongo-sanitize';
 
 export const app = express();
 
@@ -24,7 +25,10 @@ app.use(rateLimit({
 
 // this is middleware to parse the body
 // in .json() we can pass limit of the body size
-app.use(express.json({limit: '50mb'}));
+app.use(express.json({ limit: '50mb' }));
+
+// removing the $ and dots from request body in order to prevent no-sql injection
+app.use(saitize())
 
 // we can have custom middleware like this :
 // each middleware will be called one by one in order with each request
